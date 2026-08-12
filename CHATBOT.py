@@ -4,7 +4,7 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import TypedDict, Annotated
 from langgraph.graph import StateGraph, START, add_messages
-from Tools import (minimax_AI)
+from MINIMAX_H3 import (minimax_AI)
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import SystemMessage
 from datetime import datetime
