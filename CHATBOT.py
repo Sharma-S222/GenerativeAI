@@ -5,6 +5,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import TypedDict, Annotated
 from langgraph.graph import StateGraph, START, add_messages
 from MINIMAX_H3 import (minimax_AI)
+from SEEDANCE import (generate_video, generate_video_using_reference)
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import SystemMessage
 from datetime import datetime
@@ -30,7 +31,7 @@ con_kwgs = {
 class State(TypedDict):
     messages: Annotated[list, add_messages]
 
-llm_with_tools = llm.bind_tools([minimax_AI])
+llm_with_tools = llm.bind_tools([minimax_AI, generate_video_using_reference, generate_video])
 
 def chatbot(state: State):
     messages = [
@@ -46,7 +47,7 @@ def chatbot(state: State):
 
 builder = StateGraph(State)
 builder.add_node(chatbot)
-builder.add_node("tools", ToolNode([minimax_AI]))
+builder.add_node("tools", ToolNode([minimax_AI, generate_video_using_reference, generate_video]))
 
 builder.add_edge(START, "chatbot")
 builder.add_conditional_edges("chatbot", tools_condition)

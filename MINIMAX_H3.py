@@ -220,7 +220,7 @@ def retrieve_file(
 
 
 @tool
-def minimax_video_generation(prompt: str) -> str:
+def minimax_AI(prompt: str) -> str:
     """
     Generate a video using MiniMax H3.
 
@@ -265,63 +265,3 @@ def minimax_video_generation(prompt: str) -> str:
     )
 
     return video_path
-
-
-if __name__ == "__main__":
-
-    prompt = """
-    A cinematic continuous aerial shot approaching a gigantic abandoned
-    astronomical observatory built into the edge of a black volcanic island
-    at blue hour, surrounded by a calm dark ocean.
-
-    The camera slowly flies forward through a large broken glass dome
-    without cutting. Inside the observatory is an enormous mechanical
-    celestial model suspended above an ancient circular stone floor.
-
-    Hundreds of intricate brass planets, moons, rings, and constellation
-    mechanisms rotate slowly around a small glowing artificial sun.
-
-    Thin beams of cool moonlight pass through the broken glass roof.
-    Faint ocean mist drifts through the structure while small particles
-    of dust float through the light.
-
-    The camera movement remains smooth and continuous throughout the shot.
-    Maintain consistent geometry, scale, lighting, materials, and
-    environment from beginning to end.
-
-    Photorealistic weathered black stone, aged brass, realistic glass,
-    physically plausible reflections, subtle atmospheric fog, detailed
-    mechanical components, cinematic depth of field, realistic exposure,
-    mysterious quiet atmosphere.
-
-    Generate natural synchronized environmental audio matching the scene,
-    including distant ocean ambience, wind, subtle mechanical movement,
-    metallic resonance, and atmospheric room tone.
-
-    No people, no faces, no text, no logos, no subtitles,
-    no sudden camera movement, no rapid cuts, no scene transitions,
-    no object transformations, no duplicated objects,
-    no surreal deformation.
-    """
-
-    try:
-
-        result = minimax_video_generation.invoke({
-            "prompt": prompt
-        })
-
-        print("\n========================================")
-        print("MINIMAX GENERATION SUCCESSFUL")
-        print("========================================")
-        print(f"Output: {result}")
-        print("========================================")
-
-    except Exception as e:
-
-        print("\n========================================")
-        print("MINIMAX GENERATION FAILED")
-        print("========================================")
-        print(f"{type(e).__name__}: {e}")
-        print("========================================")
-
-        raise

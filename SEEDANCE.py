@@ -90,7 +90,6 @@ def poll_task(task_id, interval=5, timeout=300):
         f"{timeout} seconds."
     )
 
-@tool
 def generate_video(
     prompt: str,
     duration: int = 4,
@@ -220,8 +219,15 @@ def generate_video_using_reference(
         headers=HEADERS,
         timeout=30,
     )
+    print(f"[Seedance] HTTP status: {response.status_code}")
+    print(f"[Seedance] Response: {response.text}")
 
-    response.raise_for_status()
+    if not response.ok:
+        raise RuntimeError(
+            f"Seedance task creation failed.\n"
+            f"HTTP {response.status_code}\n"
+            f"Response: {response.text}"
+        )
 
     data = response.json()
 
@@ -241,3 +247,24 @@ def generate_video_using_reference(
     video_url = poll_task(task_id)
 
     return video_url
+
+if __name__ == "__main__":
+    prompt = (
+        "A cinematic ultra-realistic shot of an abandoned ocean observatory "
+        "built on a rocky coastline at dusk. The camera slowly moves forward "
+        "through a broken glass dome as powerful waves crash against the rocks "
+        "below. Cold ocean mist drifts through the structure, while soft wind "
+        "moves through broken windows. Inside, old brass astronomical machinery "
+        "turns slowly, reflecting the fading blue light. Natural motion, "
+        "physically realistic water, atmospheric lighting, detailed textures."
+    )
+
+    video_url = generate_video(
+        prompt=prompt,
+        duration=9,
+        aspect_ratio="16:9",
+    )
+
+    print("\nVideo generated successfully!")
+    print("Video URL:")
+    print(video_url)

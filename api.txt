@@ -1,0 +1,154 @@
+# Seedance 2.0 API via PiAPI
+
+Base URL: https://api.piapi.ai
+Auth: X-API-Key header (get your key at https://piapi.ai/workspace/key)
+
+Documentation:
+- Seedance 2.0 API: https://piapi.ai/docs/seedance-api/seedance-2
+- Private Asset Library: https://piapi.ai/docs/seedance-api/private-asset
+- Less Restriction Mode: https://piapi.ai/docs/seedance-api/less-restriction
+
+## Available Models
+
+- seedance-2: 480p $0.10/sec, 720p $0.20/sec, 1080p $0.50/sec
+- seedance-2-fast: 480p $0.08/sec, 720p $0.16/sec
+- seedance-2-less-restriction: 480p $0.125/sec, 720p $0.25/sec, 1080p $0.625/sec (supports face references)
+- seedance-2-fast-less-restriction: 480p $0.10/sec, 720p $0.20/sec (supports face references)
+
+Note: Face/real-person references require -less-restriction models and must use asset:// URLs from the Private Asset Library.
+
+---
+
+# Generation Modes
+
+## 1. Text to Video (mode: text_to_video)
+
+POST /api/v1/task
+{
+  "model": "seedance",
+  "task_type": "seedance-2",  // or seedance-2-fast, seedance-2-less-restriction, seedance-2-fast-less-restriction
+  "input": {
+    "prompt": "A woman sings and strums her guitar, warm cinematic lighting",
+    "mode": "text_to_video",
+    "duration": 5,          // 4-15 seconds
+    "aspect_ratio": "16:9"  // 21:9, 16:9, 4:3, 1:1, 3:4, 9:16
+  }
+}
+
+## 2. First/Last Frames (mode: first_last_frames)
+
+POST /api/v1/task
+{
+  "model": "seedance",
+  "task_type": "seedance-2",
+  "input": {
+    "prompt": "The character walks through a garden",
+    "mode": "first_last_frames",
+    "image_urls": [
+      "https://example.com/first-frame.jpg",
+      "https://example.com/last-frame.jpg"  // optional second image
+    ],
+    "duration": 5
+  }
+}
+
+Note: Aspect ratio is determined by the first image. Do not set aspect_ratio.
+
+## 3. Omni Reference (mode: omni_reference)
+
+POST /api/v1/task
+{
+  "model": "seedance",
+  "task_type": "seedance-2",
+  "input": {
+    "prompt": "Transform @video1 into @image1 artistic style with @audio1 as soundtrack",
+    "mode": "omni_reference",
+    "image_urls": ["https://example.com/style.jpg"],
+    "video_urls": ["https://example.com/source.mp4"],  // max 1 video
+    "audio_urls": ["https://example.com/music.mp3"],   // mp3/wav, max 15s each
+    "duration": 8,
+    "aspect_ratio": "16:9"
+  }
+}
+
+Reference syntax: @image1, @image2... @video1 (only 1), @audio1, @audio2...
+Limits: Up to 12 total references, max 1 video.
+
+---
+
+# Private Asset Library (for face/character references)
+
+Face references must be uploaded to the Asset Library first, verified (status=Active), then used via asset:// URLs in -less-restriction models.
+
+## Upload Asset
+
+POST /api/v1/asset/upload
+{
+  "url": "https://your-cdn.com/face.png",
+  "asset_type": "Image",  // Image, Video, or Audio
+  "name": "character-alice"
+}
+
+Response: { "asset_id": "asset-20260607-xxxx", "status": "Processing" }
+
+## Check Asset Status
+
+GET /api/v1/asset/{asset_id}
+
+Wait for status: "Processing" → "Active" (ready to use) or "Failed"
+
+## List Assets
+
+GET /api/v1/asset/list?page=1&size=20
+
+## Use Asset in Generation
+
+POST /api/v1/task
+{
+  "model": "seedance",
+  "task_type": "seedance-2-less-restriction",  // must use -less-restriction for face references
+  "input": {
+    "prompt": "A cyber female @image1 walks through the city",
+    "mode": "omni_reference",
+    "image_urls": ["asset://asset-20260607-xxxx"],  // use asset:// prefix
+    "duration": 5,
+    "aspect_ratio": "16:9"
+  }
+}
+
+## Delete Asset
+
+DELETE /api/v1/asset/{asset_id}
+
+Quota per plan: hobbyist 50 (3d TTL), developer 200 (7d), premium 500 (15d), enterprise 1000 (15d)
+
+---
+
+## Get Task Result
+
+GET /api/v1/task/{task_id}
+
+Status: "pending" → "processing" → "completed" or "failed"
+Video URL: response.data.output.video
+
+## Pricing
+
+| Model | 480p | 720p | 1080p |
+|-------|------|------|-------|
+| seedance-2 | $0.10/sec | $0.20/sec | $0.50/sec |
+| seedance-2-fast | $0.08/sec | $0.16/sec | - |
+| seedance-2-less-restriction | $0.125/sec | $0.25/sec | $0.625/sec |
+| seedance-2-fast-less-restriction | $0.10/sec | $0.20/sec | - |
+
+## Quick Start
+
+1. Get API key: https://piapi.ai/workspace/key
+2. Top up: https://piapi.ai/workspace/billing
+3. (For face refs) Upload to Asset Library, wait for Active status
+4. POST /api/v1/task (use asset:// URLs for face references in -less-restriction models)
+5. Poll GET /api/v1/task/{task_id} until "completed"
+6. Get video from response.data.output.video
+
+## Task History
+
+https://piapi.ai/workspace/tasks-history
